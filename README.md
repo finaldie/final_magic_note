@@ -2,8 +2,8 @@ fmagic_note
 
 Description:
 
-    This note is a magic tool for you, you can write down your note and record
-    them easily by this tool. After that, you search/edit/run them very easy.
+    This is a magic tool, with which you can not only write down and manage
+    your notes easily but also search/edit/run them easily.
 
 Install:
 
