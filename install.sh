@@ -16,5 +16,7 @@ mkdir -p $DATA
 
 # install configuration
 mkdir -p $ETC
+echo "prefix="$prefix
+echo $prefix > ./magicnoterc
 cp ./magicnoterc $ETC
 cp ./magicnoterc ~/.magicnoterc
