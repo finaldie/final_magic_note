@@ -25,7 +25,8 @@ Command:
 
 Samples
 
-[addsource]
+   * addsource
+
     bash-$ magicnote addsource git@github.com:username/magic_note.git
     Cloning into '/xxx/magicnote/var/magicnote/main'...
     remote: Counting objects: 3, done.
@@ -35,13 +36,14 @@ Samples
      0 files changed
      create mode 100644 index
 
-[list]
+   * list
+
     bash-$ magicnote list
     ssh
       |- @1 #1: ssh 127.0.0.1
       |- @2 #1: ssh -P 1234 127.0.0.1
 
-[run]
+   * run
     $ magicnote run ssh@1
     Last login: Mon Dec 17 14:23:10 2012 from localhost
     Property of Final, Inc.
@@ -51,7 +53,7 @@ Samples
     Connection to 127.0.0.1 closed.
     bash-$
 
-[find]
+   * find
     bash-$ magicnote find 1234
     ssh
       |- @2 #1: ssh -P 1234 127.0.0.1
