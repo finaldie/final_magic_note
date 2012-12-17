@@ -24,6 +24,11 @@ function string.split( line, sep, maxsplit )
     return retval
 end
 
+function string.trim(str)
+    --return str:gsub("^%s+", ""):gsub("%s+$", "")
+    return str:match("^%s*(.-)%s*$")
+end
+
 function table.print(root)
     local print = print
     local tconcat = table.concat

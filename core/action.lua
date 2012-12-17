@@ -105,44 +105,13 @@ function foreach_note(base, cb, ...)
 
     for tagname, md5_tbl in pairs(index_valuemd5_mapping_tbl) do
         for index, md5 in ipairs(md5_tbl) do
-            local content, raw_tbl = load_file(base .. "/note_" .. md5)
+            local content, raw_tbl = getnote(base, md5)
             if content and raw_tbl then
                 cb(tagname, md5, index, content, raw_tbl, ...)
             end
         end
     end
 end
-
---function list_note(base, tagname, output_func, ...)
---    local function default_output(content, index)
---        print(string.format("%s", content))
---    end
---
---    local function hook_line(line, lineno, index)
---        if lineno == 1 then
---            return string.format("  |- @%d #%d: %s", index, lineno, line)
---        else
---            return string.format("  |-    #%d: %s", lineno, line)
---        end
---    end
---
---    local md5_tbl = index_valuemd5_mapping_tbl[tagname]
---    if not md5_tbl then
---        return
---    end
---
---    print(string.format("%s", tagname))
---    for index, md5 in ipairs(md5_tbl) do
---        local content = load_file(base .. "/note_" .. md5, hook_line, index)
---        if content then
---            if output_func then
---                output_func(content, index, ...)
---            else
---                default_output(content, index)
---            end
---        end
---    end
---end
 
 function create_note_tbl(index, md5, content, raw_tbl)
     return {
@@ -161,8 +130,8 @@ function list_notes(base, tagname)
     end
 
     for index, md5 in ipairs(md5_tbl) do
-        local content, raw_tbl = load_file(base .. "/note_" .. md5)
-        if content then
+        local content, raw_tbl = getnote(base, md5)
+        if content and raw_tbl then
             local note_tbl = create_note_tbl(index, md5, content, raw_tbl)
             table.insert(notes_tbl, note_tbl)
         end
@@ -181,31 +150,45 @@ function list_all_notes(base)
     return result_tbl
 end
 
-function searchkey(file_sign)
+-- the format: tag@idx1#line, e.g. "ssh@1" or "ssh@1#2"
+function split_file_sign(file_sign)
     local file_and_location = string.split(file_sign, "@")
-    if table.size(file_and_location) == 2 then
-        local tag = file_and_location[1]
-        local target_idx = tonumber(file_and_location[2])
-        if not target_idx or target_idx < 1 then
-            return
-        end
 
-        local md5_tbl = index_valuemd5_mapping_tbl[tag]
-        if md5_tbl and not table.empty(md5_tbl) then
-            for index, md5 in ipairs(md5_tbl) do
-                if index == target_idx then
-                    return tag, md5
-                end
+    if table.size(file_and_location) ~= 2 then
+        return
+    end
+
+    local tag = file_and_location[1]
+    local target_tbl = string.split(file_and_location[2], "#")
+    local target_idx = tonumber(target_tbl[1])
+    local target_line = tonumber(target_tbl[2]) -- this may be missed
+
+    if not target_idx or target_idx < 1 then
+        return
+    end
+
+    return tag, target_idx, target_line
+end
+
+function searchkey(tag, target_idx)
+    if not tag or not target_idx then
+        return
+    end
+
+    local md5_tbl = index_valuemd5_mapping_tbl[tag]
+    if md5_tbl and not table.empty(md5_tbl) then
+        for index, md5 in ipairs(md5_tbl) do
+            if index == target_idx then
+                return md5
             end
         end
     end
 end
 
-function searchkey_and_note(base, file_sign)
-    local tag, md5 = searchkey(file_sign)
-    if tag and md5 then
+function getnote(base, md5)
+    if base and md5 then
         local content, raw_tbl = load_file(base .. "/note_" .. md5)
-        return tag, md5, content, raw_tbl
+        return content, raw_tbl
     end
 end
 
@@ -286,11 +269,22 @@ function dump_note_tbl(note_tbl)
     local content = note_tbl.content
     local raw_tbl = note_tbl.raw_tbl
 
+    local real_lineno = 0
     for lineno, line in ipairs(raw_tbl) do
-        if lineno == 1 then
-            print(string.format("  |- @%d #%d: %s", index, lineno, line))
+        local trimed_line = string.trim(line)
+        local location = string.find(trimed_line, "#")
+
+        if location ~= 1 then
+            -- this is a valid line, which can run in the shell
+            real_lineno = real_lineno + 1
+
+            if real_lineno == 1 then
+                print(string.format("  |- @%d #%d: %s", index, real_lineno, line))
+            else
+                print(string.format("  |-    #%d: %s", real_lineno, line))
+            end
         else
-            print(string.format("  |-    #%d: %s", lineno, line))
+            print(string.format("  |-      : %s", line))
         end
     end
 end
@@ -311,8 +305,32 @@ function dump_result_tbl(result_tbl)
     end
 end
 
-function dump_raw_info(content)
+function dump_raw_info_all(content, raw_tbl, target_lineno)
     print(string.format("%s", content))
+end
+
+function dump_raw_info_byline(raw_tbl, target_lineno)
+    local real_lineno = 0
+    for _, line in ipairs(raw_tbl) do
+        local trimed_line = string.trim(line)
+        local location = string.find(trimed_line, "#")
+
+        -- this is a valid line, which can run in the shell
+        if location ~= 1 then
+            real_lineno = real_lineno + 1
+            if real_lineno == target_lineno then
+                print(string.format("%s", line))
+            end
+        end
+    end
+end
+
+function dump_raw_info(content, raw_tbl, target_lineno)
+    if target_lineno and target_lineno >= 1 then
+        return dump_raw_info_byline(raw_tbl, target_lineno)
+    end
+
+    return dump_raw_info_all(content)
 end
 
 if ( not arg[1] ) then
@@ -357,8 +375,9 @@ elseif arg[1] == "searchkey" then
     local file_sign = arg[4]
 
     load_indexs(base, index_filename)
-    local tag, md5 = searchkey(file_sign)
-    if tag and md5 then
+    local tag, target_idx = split_file_sign(file_sign)
+    local md5 = searchkey(tag, target_idx)
+    if md5 then
         print(string.format("%s %s", tag, md5))
     end
 elseif arg[1] == "rm" then
@@ -367,7 +386,11 @@ elseif arg[1] == "rm" then
     local file_sign = arg[4]
 
     load_indexs(base, index_filename)
-    local tag, md5 = searchkey(file_sign)
+    local tag, target_idx = split_file_sign(file_sign)
+    local md5 = searchkey(tag, target_idx)
+    if not md5 then
+        return
+    end
 
     rm_note(tag, md5)
     dump_indexs()
@@ -404,11 +427,12 @@ elseif arg[1] == "getnote" then
     local file_sign = arg[4]
 
     load_indexs(base, index_filename)
-    local tag, md5, content, raw_tbl = searchkey_and_note(base, file_sign)
-
-    if not tag or not md5 then
+    local tag, target_idx, target_line = split_file_sign(file_sign)
+    local md5 = searchkey(tag, target_idx)
+    if not md5 then
         return
     end
 
-    dump_raw_info(content)
+    local content, raw_tbl = getnote(base, md5)
+    dump_raw_info(content, raw_tbl, target_line)
 end
