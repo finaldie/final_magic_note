@@ -2,6 +2,7 @@
 index_valuemd5_mapping_tbl = {}
 valuemd5_index_mapping_tbl = {}
 DEBUG = false
+DEFAULT_DISPLAY_BYTES = 120
 
 function debug_print(fmt, ...)
     local t = {...}
@@ -304,7 +305,11 @@ function dump_note_tbl(note_tbl)
 
             if is_valid_line(line) then
                 real_lineno = real_lineno + 1
-                print(string.format("  |- %s #%d: %s", index_sign, real_lineno, line))
+                local display = string.format("  |- %s #%d: %s", index_sign, real_lineno, line)
+                if string.len(display) > DEFAULT_DISPLAY_BYTES then
+                    display = string.sub(display, 1, DEFAULT_DISPLAY_BYTES) .. "..."
+                end
+                print(display)
             else
                 print(string.format("  |- %s   : %s", index_sign, line))
             end
@@ -314,6 +319,7 @@ end
 
 function dump_notes_tbl(tagname, notes_tbl)
     if not table.empty(notes_tbl) then
+        -- print tagname
         print(string.format("%s", tagname))
 
         for _, note in ipairs(notes_tbl) do
