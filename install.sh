@@ -17,6 +17,7 @@ mkdir -p $DATA
 # install configuration
 mkdir -p $ETC
 echo "prefix="$prefix
-echo "## this configuration for magic note, will be included by source command\n\nMAGICTOP=$prefix" > ./magicnoterc
+echo "## this configuration for magic note, will be included by source command" > ./magicnoterc
+echo "MAGICTOP=$prefix" >> ./magicnoterc
 cp ./magicnoterc $ETC
 cp ./magicnoterc ~/.magicnoterc
