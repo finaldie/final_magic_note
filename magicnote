@@ -368,7 +368,7 @@ elif [ $1 = "run" ]; then
     action_run $@
 elif [ $1 = "status" ]; then
     action_status
-elif [ $1 = "push"]; then
+elif [ $1 = "push" ]; then
     action_push
 elif [ $1 = "pull" ]; then
     action_pull
