@@ -1,5 +1,4 @@
 
-top_dir = nil
 index_valuemd5_mapping_tbl = {}
 valuemd5_index_mapping_tbl = {}
 DEBUG = false
@@ -264,6 +263,28 @@ function find_note(base, find_tags)
     return result_tbl
 end
 
+function is_empty_line(line)
+    local trimed_line = string.trim(line)
+    if string.len(trimed_line) == 0 then
+        return true
+    end
+    return false
+end
+
+function is_valid_line(line)
+    if is_empty_line(line) then
+        return false
+    end
+
+    local trimed_line = string.trim(line)
+    local location = string.find(trimed_line, "#")
+    if location ~= 1 then
+        return true
+    end
+
+    return false
+end
+
 function dump_note_tbl(note_tbl)
     local index = note_tbl.index
     local content = note_tbl.content
@@ -271,10 +292,7 @@ function dump_note_tbl(note_tbl)
 
     local real_lineno = 0
     for lineno, line in ipairs(raw_tbl) do
-        local trimed_line = string.trim(line)
-        local location = string.find(trimed_line, "#")
-
-        if location ~= 1 then
+        if is_valid_line(line) then
             -- this is a valid line, which can run in the shell
             real_lineno = real_lineno + 1
 
@@ -284,7 +302,9 @@ function dump_note_tbl(note_tbl)
                 print(string.format("  |-    #%d: %s", real_lineno, line))
             end
         else
-            print(string.format("  |-      : %s", line))
+            if not is_empty_line(line) then
+                print(string.format("  |-      : %s", line))
+            end
         end
     end
 end
@@ -312,11 +332,8 @@ end
 function dump_raw_info_byline(raw_tbl, target_lineno)
     local real_lineno = 0
     for _, line in ipairs(raw_tbl) do
-        local trimed_line = string.trim(line)
-        local location = string.find(trimed_line, "#")
-
-        -- this is a valid line, which can run in the shell
-        if location ~= 1 then
+        if is_valid_line(line) then
+            -- this is a valid line, which can run in the shell
             real_lineno = real_lineno + 1
             if real_lineno == target_lineno then
                 print(string.format("%s", line))
@@ -334,6 +351,11 @@ function dump_raw_info(content, raw_tbl, target_lineno)
 end
 
 if ( not arg[1] ) then
+    print("missing binary top arg")
+    return
+end
+
+if not arg[2] then
     print("missing action arg")
     return
 end
@@ -342,23 +364,27 @@ if DEBUG then
     table.print(arg)
 end
 
-package.path = package.path .. ";/usr/local/share/magicnote/?.lua"
-require("util")
+package.path = package.path .. ";" .. arg[1] .. "/?.lua"
+require("magicnote_util")
 
-if arg[1] == "add" then
-    top_dir = arg[2]
-    load_indexs(arg[2], arg[3])
+if arg[2] == "add" then
+    local base = arg[3]
+    local index_filename = arg[4]
+    load_indexs(base, index_filename)
 
-    local note_filename = arg[5]
+    local note_filename = arg[6]
     local prefix_md5 = string.split(note_filename, "_")
     local prefix = prefix_md5[1]
     local md5 = prefix_md5[2]
-    add_note(arg[4], md5)
+    local tagname = arg[5]
+
+    add_note(tagname, md5)
     dump_indexs()
-elseif arg[1] == "list" then
-    local base = arg[2]
-    local index_filename = arg[3]
-    local tagname = arg[4]
+
+elseif arg[2] == "list" then
+    local base = arg[3]
+    local index_filename = arg[4]
+    local tagname = arg[5]
 
     load_indexs(base, index_filename)
 
@@ -369,10 +395,10 @@ elseif arg[1] == "list" then
         local notes_tbl = list_notes(base, tagname)
         dump_notes_tbl(tagname, notes_tbl)
     end
-elseif arg[1] == "searchkey" then
-    local base = arg[2]
-    local index_filename = arg[3]
-    local file_sign = arg[4]
+elseif arg[2] == "searchkey" then
+    local base = arg[3]
+    local index_filename = arg[4]
+    local file_sign = arg[5]
 
     load_indexs(base, index_filename)
     local tag, target_idx = split_file_sign(file_sign)
@@ -380,10 +406,10 @@ elseif arg[1] == "searchkey" then
     if md5 then
         print(string.format("%s %s", tag, md5))
     end
-elseif arg[1] == "rm" then
-    local base = arg[2]
-    local index_filename = arg[3]
-    local file_sign = arg[4]
+elseif arg[2] == "rm" then
+    local base = arg[3]
+    local index_filename = arg[4]
+    local file_sign = arg[5]
 
     load_indexs(base, index_filename)
     local tag, target_idx = split_file_sign(file_sign)
@@ -394,26 +420,26 @@ elseif arg[1] == "rm" then
 
     rm_note(tag, md5)
     dump_indexs()
-elseif arg[1] == "updatemd5" then
-    local base = arg[2]
-    local index_filename = arg[3]
-    local tagname = arg[4]
-    local old_md5 = arg[5]
-    local new_md5 = arg[6]
+elseif arg[2] == "updatemd5" then
+    local base = arg[3]
+    local index_filename = arg[4]
+    local tagname = arg[5]
+    local old_md5 = arg[6]
+    local new_md5 = arg[7]
 
     load_indexs(base, index_filename)
     update_md5(tagname, old_md5, new_md5)
     dump_indexs()
-elseif arg[1] == "find" then
-    local base = arg[2]
-    local index_filename = arg[3]
+elseif arg[2] == "find" then
+    local base = arg[3]
+    local index_filename = arg[4]
 
-    local find_tags_size = table.size(arg) - 3 - 2
+    local find_tags_size = table.size(arg) - 4 - 2
     if find_tags_size == 0 then
         return
     else
         local find_tags = {}
-        for i=4, 4+find_tags_size-1 do
+        for i=5, 5+find_tags_size-1 do
             find_tags[arg[i]] = false -- first, mark all tags false
         end
 
@@ -421,10 +447,10 @@ elseif arg[1] == "find" then
         local result_tbl = find_note(base, find_tags)
         dump_result_tbl(result_tbl)
     end
-elseif arg[1] == "getnote" then
-    local base = arg[2]
-    local index_filename = arg[3]
-    local file_sign = arg[4]
+elseif arg[2] == "getnote" then
+    local base = arg[3]
+    local index_filename = arg[4]
+    local file_sign = arg[5]
 
     load_indexs(base, index_filename)
     local tag, target_idx, target_line = split_file_sign(file_sign)

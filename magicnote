@@ -27,7 +27,7 @@ elif [ -f /usr/local/etc/magicnoterc ]; then
     source /usr/local/etc/magicnoterc
 fi
 
-BINTOP=/usr/local/share/magicnote
+BINTOP=$MAGICTOP/bin
 DATATOP=$MAGICTOP/var
 ETCTOP=$MAGICTOP/etc
 
@@ -35,10 +35,8 @@ ETCTOP=$MAGICTOP/etc
 OSNAME=`uname`
 
 NOTEDIR=magicnote
-MAINNOTE=main
-
-MAINNOTE_DIR=$DATATOP/$NOTEDIR/$MAINNOTE
-ACTION_BIN=$BINTOP/action.lua
+MAINNOTE_DIR=$DATATOP/$NOTEDIR/$CURRENT
+ACTION_BIN=$BINTOP/magicnote_action.lua
 
 TMPDIR=/tmp
 FPREFIX=note_
@@ -84,7 +82,7 @@ function cal_md5()
 {
     local file=$1
     if [ $OSNAME = "Linux" ]; then
-        local md5v=`md5sum $file | awk {'print $1'}}`
+        local md5v=`md5sum $file | awk {'print $1'}`
         echo $md5v
     elif [ $OSNAME = "Darwin" ]; then
         local md5v=`md5 -q $file`
@@ -128,13 +126,13 @@ function action_list()
 {
     # because list tags is a very complex job, we call a lua script to do this
     if [ $# = 0 ]; then
-        lua $ACTION_BIN list $MAINNOTE_DIR $INDEX_FILENAME
+        lua $ACTION_BIN $BINTOP list $MAINNOTE_DIR $INDEX_FILENAME
         exit
     fi
 
     while [ -n "$1" ]
     do
-        lua $ACTION_BIN list $MAINNOTE_DIR $INDEX_FILENAME $1
+        lua $ACTION_BIN $BINTOP list $MAINNOTE_DIR $INDEX_FILENAME $1
         shift
     done
 }
@@ -172,7 +170,7 @@ function action_add()
     fi
 
     #echo "tagname=$tagname"
-    lua $ACTION_BIN add $TMPDIR magic_index $tagname $notefile > $FINALINDEX
+    lua $ACTION_BIN $BINTOP add $TMPDIR magic_index $tagname $notefile > $FINALINDEX
 
     ## if everything is ok, move note file and index to origin place
     mv $TMPFILE $MAINNOTE_DIR/$notefile;
@@ -194,12 +192,12 @@ function action_rm()
     do
         # find which file need to edit
         local file_sign=$1
-        local file_info=`lua $ACTION_BIN searchkey $TMPDIR magic_index $file_sign`
+        local file_info=`lua $ACTION_BIN $BINTOP searchkey $TMPDIR magic_index $file_sign`
         local tagname=`echo $file_info | awk {'print $1'}`
         local md5=`echo $file_info | awk {'print $2'}`
 
         cp $MAINNOTE_DIR/$INDEX_FILENAME $TMPINDEX
-        lua $ACTION_BIN rm $MAINNOTE_DIR $INDEX_FILENAME $file_sign > $FINALINDEX
+        lua $ACTION_BIN $BINTOP rm $MAINNOTE_DIR $INDEX_FILENAME $file_sign > $FINALINDEX
         mv $FINALINDEX $MAINNOTE_DIR/$INDEX_FILENAME
         (
             cd $MAINNOTE_DIR/;
@@ -229,7 +227,7 @@ function action_edit()
 
         # find which file need to edit
         local file_sign=$1
-        local file_info=`lua $ACTION_BIN searchkey $TMPDIR magic_index $file_sign`
+        local file_info=`lua $ACTION_BIN $BINTOP searchkey $TMPDIR magic_index $file_sign`
         local tagname=`echo $file_info | awk {'print $1'}`
         local md5=`echo $file_info | awk {'print $2'}`
 
@@ -238,7 +236,7 @@ function action_edit()
 
         local new_md5=`cal_md5 $TMPFILE`
         if [ $new_md5 != $md5 ]; then
-            lua $ACTION_BIN updatemd5 $TMPDIR magic_index $tagname $md5 $new_md5 > $FINALINDEX;
+            lua $ACTION_BIN $BINTOP updatemd5 $TMPDIR magic_index $tagname $md5 $new_md5 > $FINALINDEX;
             # all done, move back files, first replace the old one, then call
             # git mv to the new one
             mv $TMPFILE $MAINNOTE_DIR/$FPREFIX$new_md5;
@@ -263,7 +261,7 @@ function action_find()
         exit
     fi
 
-    lua $ACTION_BIN find $MAINNOTE_DIR $INDEX_FILENAME $@
+    lua $ACTION_BIN $BINTOP find $MAINNOTE_DIR $INDEX_FILENAME $@
 }
 
 function action_run()
@@ -273,7 +271,7 @@ function action_run()
         exit
     fi
 
-    lua $ACTION_BIN getnote $MAINNOTE_DIR $INDEX_FILENAME $@ > $TMPDIR/tmp_note.sh
+    lua $ACTION_BIN $BINTOP getnote $MAINNOTE_DIR $INDEX_FILENAME $@ > $TMPDIR/tmp_note.sh
     sh /tmp/tmp_note.sh
 
     # cat $TMPDIR/tmp_note.info | while read line
@@ -284,6 +282,40 @@ function action_run()
     #     sh /tmp/tmp_run.sh;
     # done
 }
+
+function action_status()
+{
+    cd $DATATOP/$NOTEDIR;
+    local all_folders=`ls ./`;
+    echo "$all_folders" | while read folder
+    do
+        (
+        cd $folder &&
+        local origin_url=`git config --get remote.origin.url`;
+        if [ $CURRENT = "$folder" ]; then
+            echo "* $folder : $origin_url"
+        else
+            echo "  $folder : $origin_url"
+        fi
+        )
+    done
+
+    #cd $MAINNOTE_DIR;
+    #local origin_url=`git config --get remote.origin.url`;
+    #echo "@$CURRENT : $origin_url";
+}
+
+function action_push()
+{(
+    cd $MAINNOTE_DIR;
+    git push
+)}
+
+function action_pull()
+{(
+    cd $MAINNOTE_DIR;
+    git pull
+)}
 
 ######## main #########
 
@@ -334,4 +366,10 @@ elif [ $1 = "run" ]; then
     pre_check
     shift
     action_run $@
+elif [ $1 = "status" ]; then
+    action_status
+elif [ $1 = "push"]; then
+    action_push
+elif [ $1 = "pull" ]; then
+    action_pull
 fi
