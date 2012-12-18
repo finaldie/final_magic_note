@@ -5,6 +5,10 @@ Description:
     This is a magic tool, with which you can not only write down and manage
     your notes easily but also search/edit/run them easily.
 
+DEPENDENCE
+
+    This tool require lua 5.1+
+
 Install:
 
     ./install.sh
