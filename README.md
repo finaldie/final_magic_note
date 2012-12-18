@@ -22,6 +22,9 @@ Command:
       \_ magicnote edit tag@index [tag2@index2 ...]
       \_ magicnote find tag1 tag2 ...
       \_ magicnote run tag@index [tag2@index2 ...]
+      \_ magicnote status
+      \_ magicnote push
+      \_ magicnote pull
 
 Samples
 
