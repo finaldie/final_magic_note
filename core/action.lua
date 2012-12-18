@@ -125,7 +125,7 @@ function list_notes(base, tagname)
     local notes_tbl = {}
     local md5_tbl = index_valuemd5_mapping_tbl[tagname]
     if not md5_tbl then
-        return
+        return notes_tbl
     end
 
     for index, md5 in ipairs(md5_tbl) do
@@ -291,19 +291,22 @@ function dump_note_tbl(note_tbl)
     local raw_tbl = note_tbl.raw_tbl
 
     local real_lineno = 0
+    local valid_lineno = 0
+    local index_sign = ""
     for lineno, line in ipairs(raw_tbl) do
-        if is_valid_line(line) then
-            -- this is a valid line, which can run in the shell
-            real_lineno = real_lineno + 1
-
-            if real_lineno == 1 then
-                print(string.format("  |- @%d #%d: %s", index, real_lineno, line))
+        if not is_empty_line(line) then
+            valid_lineno = valid_lineno + 1
+            if valid_lineno == 1 then
+                index_sign = string.format("@%d", index)
             else
-                print(string.format("  |-    #%d: %s", real_lineno, line))
+                index_sign = "  "
             end
-        else
-            if not is_empty_line(line) then
-                print(string.format("  |-      : %s", line))
+
+            if is_valid_line(line) then
+                real_lineno = real_lineno + 1
+                print(string.format("  |- %s #%d: %s", index_sign, real_lineno, line))
+            else
+                print(string.format("  |- %s   : %s", index_sign, line))
             end
         end
     end
