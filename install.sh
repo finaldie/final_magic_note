@@ -19,7 +19,8 @@ mkdir -p $ETC
 
 # prepare a default magicnoterc
 echo "Installed at $prefix --> completed, have a fun"
-sed -e "s:MAGICTOP=.*:MAGICTOP=$prefix:" magicnoterc
+sed -e "s:MAGICTOP=.*:MAGICTOP=$prefix:" magicnoterc > /tmp/magicnoterc
 
-cp ./magicnoterc $ETC
-cp ./magicnoterc ~/.magicnoterc
+cp /tmp/magicnoterc $ETC
+cp /tmp/magicnoterc ~/.magicnoterc
+rm -f /tmp/magicnoterc
