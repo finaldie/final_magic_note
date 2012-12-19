@@ -1,3 +1,4 @@
 ## this configuration for magic note, will be included by source command
 MAGICTOP=~/magicnote
 CURRENT=main
+EDITOR=vim

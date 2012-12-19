@@ -156,7 +156,7 @@ function action_add()
     #1
     ## prepare a tmp environment
     cp $MAINNOTE_DIR/$INDEX_FILENAME $TMPINDEX
-    vim $TMPFILE
+    $EDITOR $TMPFILE
     if [ ! -f $TMPFILE ]; then
         exit
     fi
@@ -235,7 +235,7 @@ function action_edit()
         local md5=`echo $file_info | awk {'print $2'}`
 
         cp $MAINNOTE_DIR/$FPREFIX$md5 $TMPFILE
-        vim $TMPFILE
+        $EDITOR $TMPFILE
 
         local new_md5=`cal_md5 $TMPFILE`
         if [ $new_md5 != $md5 ]; then
@@ -375,4 +375,7 @@ elif [ $1 = "push" ]; then
     action_push
 elif [ $1 = "pull" ]; then
     action_pull
+else
+    echo "unknown arg '$1'"
+    print_usage
 fi

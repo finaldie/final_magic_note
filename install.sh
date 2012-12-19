@@ -18,10 +18,8 @@ mkdir -p $DATA
 mkdir -p $ETC
 
 # prepare a default magicnoterc
-echo "prefix="$prefix
-echo "## this configuration for magic note, will be included by source command" > ./magicnoterc
-echo "MAGICTOP=$prefix" >> ./magicnoterc
-echo "CURRENT=main" >> ./magicnoterc
+echo "Installed at $prefix --> completed, have a fun"
+sed -e "s:MAGICTOP=.*:MAGICTOP=$prefix:" magicnoterc
 
 cp ./magicnoterc $ETC
 cp ./magicnoterc ~/.magicnoterc
