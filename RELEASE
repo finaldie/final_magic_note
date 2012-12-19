@@ -1,3 +1,5 @@
+0.1.2 2012-12-19
+    fix install.sh
 0.1.1 2012-12-19
     more user friendly, and support change editor, default is vim
 0.1.0 2012-12-18
