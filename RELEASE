@@ -1,3 +1,5 @@
+0.1.5 2012-12-20
+    fix text-transform issue for find command
 0.1.4 2012-12-20
     fix a issue, add a note which tagname contain blanks
 0.1.3 2012-12-20
