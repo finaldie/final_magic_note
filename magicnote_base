@@ -134,8 +134,9 @@ function action_add()
         read -p "input tag name:" tagname;
     fi
 
+    tagname=`echo $tagname | sed -e "s/ /_/g"`
     #echo "tagname=$tagname"
-    lua $ACTION_BIN $BINTOP add $TMPDIR $TMP_INDEX_FILENAME $tagname $notefile > $FINALINDEX
+    lua $ACTION_BIN $BINTOP add $TMPDIR $TMP_INDEX_FILENAME "$tagname" $notefile > $FINALINDEX
 
     ## if everything is ok, move note file and index to origin place
     mv $TMPFILE $MAINNOTE_DIR/$notefile;
