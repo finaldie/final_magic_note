@@ -79,7 +79,9 @@ end
 -- then we use the return value as new line string
 function load_file(filename, hook_line, ...)
     local f = io.open(filename)
-    assert(f)
+    if not f then
+        return
+    end
 
     local note_content_tbl = {}
     local lineno = 0

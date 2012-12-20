@@ -7,7 +7,7 @@ ETC=$prefix/etc
 
 # install binrary
 mkdir -p $BIN
-cp ./magicnote $BIN
+cp ./magicnote ./magicnote_git $BIN
 cp core/action.lua $BIN/magicnote_action.lua
 cp core/util.lua $BIN/magicnote_util.lua
 
@@ -16,6 +16,7 @@ mkdir -p $DATA
 
 # install configuration
 mkdir -p $ETC
+cp ./magicnote_base $ETC
 
 # prepare a default magicnoterc
 echo "Installed at $prefix --> completed, have a fun"

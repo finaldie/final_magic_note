@@ -1,0 +1,287 @@
+#! /bin/sh
+
+# main function:
+#   \_ Add repository ( normal folder or git repository )
+#   \_ Add snippet ( key - value pair )
+#   \_ List snippets
+#   \_ Show one snippet
+#   \_ Modify snippet
+#   \_ Search snippet
+#   \_ Run snippet
+
+# design
+# basic structure:
+# .bin
+# .data
+#   |-- main
+#   `-- others(submodules)
+#     |-- foo
+#     `-- bar
+
+# Data Mode is key:value = N:M
+
+# global vars
+OSNAME=`uname`
+
+NOTEDIR=magicnote
+MAINNOTE_DIR=$DATATOP/$NOTEDIR/$CURRENT
+ACTION_BIN=$BINTOP/magicnote_action.lua
+
+TMPDIR=/tmp
+FPREFIX=note_
+INDEX_FILENAME=index
+TMP_INDEX_FILENAME=magic_index
+TMP_NOTE_FILENAME=magic_note
+TMP_FINAL_IDX_FILENAME=final_index
+TMPFILE=$TMPDIR/$TMP_NOTE_FILENAME
+TMPINDEX=$TMPDIR/$TMP_INDEX_FILENAME
+FINALINDEX=$TMPDIR/$TMP_FINAL_IDX_FILENAME
+
+function prepare()
+{
+    ( test -d "$DATATOP/$NOTEDIR" || mkdir -p $DATATOP/$NOTEDIR )
+}
+
+function pre_check()
+{
+    if [ ! -d $MAINNOTE_DIR ]; then
+        echo "no source found, please add a note source at first, e.g. magicnote addsource"
+        exit
+    fi
+
+    # if no index file, create a empty one
+    if [ ! -f $MAINNOTE_DIR/$INDEX_FILENAME ]; then
+        touch $MAINNOTE_DIR/$INDEX_FILENAME
+    fi
+}
+
+function check_os()
+{
+    if [ $OSNAME = "Linux" ]; then
+        break
+    elif [ $OSNAME = "Darwin" ]; then
+        break
+    else
+        echo "unsupport os"
+        exit
+    fi
+}
+
+function cal_md5()
+{
+    local file=$1
+    if [ $OSNAME = "Linux" ]; then
+        local md5v=`md5sum $file | awk {'print $1'}`
+        echo $md5v
+    elif [ $OSNAME = "Darwin" ]; then
+        local md5v=`md5 -q $file`
+        echo $md5v
+    else
+        echo "unsupport os, now only support Linux and MacOS"
+        exit
+    fi
+}
+
+function cleanup()
+{
+    rm -f $TMPFILE $TMPINDEX $FINALINDEX
+}
+
+function action_list()
+{
+    # because list tags is a very complex job, we call a lua script to do this
+    if [ $# = 0 ]; then
+        lua $ACTION_BIN $BINTOP list $MAINNOTE_DIR $INDEX_FILENAME
+        exit
+    fi
+
+    while [ -n "$1" ]
+    do
+        lua $ACTION_BIN $BINTOP list $MAINNOTE_DIR $INDEX_FILENAME $1
+        shift
+    done
+}
+
+function action_add()
+{
+    # try to find the -tag arg
+    local tagname
+    if [ $# != 0 ] && [ $1 = "-tag" ]; then
+        tagname="$2"
+    fi
+
+    # 1. add note
+    # 2. add key
+    # 3. collect file status and commit into local
+    # 4. cleanup tmp files
+
+    #1
+    ## prepare a tmp environment
+    cp $MAINNOTE_DIR/$INDEX_FILENAME $TMPINDEX
+    $EDITOR $TMPFILE
+    if [ ! -f $TMPFILE ]; then
+        exit
+    fi
+
+    local md5v=`cal_md5 $TMPFILE`
+    echo "$md5v"
+    local notefile=$FPREFIX$md5v
+
+    #2
+    # because add/update key is a very complex job, we call a lua script to do
+    # this job
+    if [ -z "$tagname" ]; then
+        read -p "input tag name:" tagname;
+    fi
+
+    #echo "tagname=$tagname"
+    lua $ACTION_BIN $BINTOP add $TMPDIR $TMP_INDEX_FILENAME $tagname $notefile > $FINALINDEX
+
+    ## if everything is ok, move note file and index to origin place
+    mv $TMPFILE $MAINNOTE_DIR/$notefile;
+    mv $FINALINDEX $MAINNOTE_DIR/$INDEX_FILENAME
+}
+
+function action_rm_one()
+{
+    if [ $# = 0 ]; then
+        echo "please input a file stamp, e.g. mn edit ssh@1"
+        exit
+    fi
+
+    cleanup
+    cp $MAINNOTE_DIR/$INDEX_FILENAME $TMPINDEX
+
+    # find which file need to edit
+    local file_sign=$1
+    local file_info=`lua $ACTION_BIN $BINTOP searchkey $TMPDIR $TMP_INDEX_FILENAME $file_sign`
+    local tagname=`echo $file_info | awk {'print $1'}`
+    local md5=`echo $file_info | awk {'print $2'}`
+
+    if [ ! -f  $MAINNOTE_DIR/$FPREFIX$md5 ]; then
+        echo "Not found a note named $FPREFIX$md5, please check it"
+        exit
+    fi
+
+    lua $ACTION_BIN $BINTOP rm $MAINNOTE_DIR $INDEX_FILENAME $file_sign > $FINALINDEX
+    mv $FINALINDEX $MAINNOTE_DIR/$INDEX_FILENAME
+    cleanup
+}
+
+function action_rm()
+{
+    if [ $# = 0 ]; then
+        echo "please input a file stamp, e.g. mn edit ssh@1"
+        exit
+    fi
+
+    while [ -n "$1" ]
+    do
+        action_rm_one $1
+        shift
+    done
+}
+
+function action_edit_one()
+{
+    cleanup
+    # copy index file to tmp dir
+    cp $MAINNOTE_DIR/$INDEX_FILENAME $TMPINDEX
+
+    # find which file need to edit
+    local file_sign=$1
+    local file_info=`lua $ACTION_BIN $BINTOP searchkey $TMPDIR $TMP_INDEX_FILENAME $file_sign`
+    local tagname=`echo $file_info | awk {'print $1'}`
+    local md5=`echo $file_info | awk {'print $2'}`
+
+    if [ ! -f $MAINNOTE_DIR/$FPREFIX$md5 ]; then
+        echo "Not found a note named $FPREFIX$md5, please check it"
+        exit
+    fi
+
+    cp $MAINNOTE_DIR/$FPREFIX$md5 $TMPFILE
+    $EDITOR $TMPFILE
+
+    local new_md5=`cal_md5 $TMPFILE`
+    if [ $new_md5 != $md5 ]; then
+        lua $ACTION_BIN $BINTOP updatemd5 $TMPDIR $TMP_INDEX_FILENAME $tagname $md5 $new_md5 > $FINALINDEX;
+        # all done, move files back, replace the old one
+        mv $TMPFILE $MAINNOTE_DIR/$FPREFIX$new_md5;
+        mv $FINALINDEX $MAINNOTE_DIR/$INDEX_FILENAME;
+    fi
+
+    cleanup
+}
+
+function action_edit()
+{
+    if [ $# = 0 ]; then
+        echo "please input a file stamp, e.g. mn edit ssh@1"
+        exit
+    fi
+
+    while [ -n "$1" ]
+    do
+        action_edit_one $1
+        shift
+    done
+}
+
+function action_find()
+{
+    if [ $# = 0 ]; then
+        echo "please input a key for this finding, e.g. find test"
+        exit
+    fi
+
+    lua $ACTION_BIN $BINTOP find $MAINNOTE_DIR $INDEX_FILENAME $@
+}
+
+function action_run()
+{
+    if [ $# = 0 ]; then
+        echo "please input a key for this running, e.g. run ssh@1[#1]"
+        exit
+    fi
+
+    local file_sign=$1
+    local file_info=`lua $ACTION_BIN $BINTOP searchkey $MAINNOTE_DIR $INDEX_FILENAME $file_sign`
+    local tagname=`echo $file_info | awk {'print $1'}`
+    local md5=`echo $file_info | awk {'print $2'}`
+
+    if [ ! -f $MAINNOTE_DIR/$FPREFIX$md5 ]; then
+        echo "Not found a note named $FPREFIX$md5, please check it"
+        exit
+    fi
+
+    lua $ACTION_BIN $BINTOP getnote $MAINNOTE_DIR $INDEX_FILENAME $1 > $TMPDIR/tmp_note.sh
+    echo "ready to run:"
+    cat $TMPDIR/tmp_note.sh
+    sh $TMPDIR/tmp_note.sh
+}
+
+function dump_unuseful_list()
+{(
+    cd $MAINNOTE_DIR;
+    local filelist=`ls ./ | grep $FPREFIX`;
+    #local new_filelist=`echo $filelist | sed -e "s/ /,/g"`;
+    lua $ACTION_BIN $BINTOP gc $MAINNOTE_DIR $INDEX_FILENAME "$filelist";
+)}
+
+function action_addsource()
+{
+    #if [ $# != 1 ]; then
+    #    echo "need source address, for example: addsource main"
+    #    exit
+    #fi
+
+    local repository_name=$1
+    mkdir -p $MAINNOTE_DIR
+    cd $MAINNOTE_DIR && touch $INDEX_FILENAME
+}
+
+######## main #########
+
+check_os
+# check first
+prepare

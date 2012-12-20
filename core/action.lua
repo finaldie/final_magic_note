@@ -3,6 +3,8 @@ index_valuemd5_mapping_tbl = {}
 valuemd5_index_mapping_tbl = {}
 DEBUG = false
 DEFAULT_DISPLAY_BYTES = 120
+NOTE_PREFIX = "note_"
+INDEX_FILENAME = "index"
 
 function debug_print(fmt, ...)
     local t = {...}
@@ -81,12 +83,16 @@ function load_indexs(base, index_filename)
             local md5_tbl = string.split(md5_strings, ",")
 
             -- fill index -- values mapping
-            index_valuemd5_mapping_tbl[key] = md5_tbl
+            if not table.empty(md5_tbl) then
+                index_valuemd5_mapping_tbl[key] = md5_tbl
+            end
 
             -- fill md5 values -- index mapping
             for _, md5 in pairs(md5_tbl) do
-                valuemd5_index_mapping_tbl[md5] = valuemd5_index_mapping_tbl[md5] or {}
-                table.insert(valuemd5_index_mapping_tbl[md5], key)
+                if md5 and string.len(md5) > 0 then
+                    valuemd5_index_mapping_tbl[md5] = valuemd5_index_mapping_tbl[md5] or {}
+                    table.insert(valuemd5_index_mapping_tbl[md5], key)
+                end
             end
         end
     end
@@ -187,7 +193,7 @@ end
 
 function getnote(base, md5)
     if base and md5 then
-        local content, raw_tbl = load_file(base .. "/note_" .. md5)
+        local content, raw_tbl = load_file(base .. "/" .. NOTE_PREFIX .. md5)
         return content, raw_tbl
     end
 end
@@ -359,6 +365,28 @@ function dump_raw_info(content, raw_tbl, target_lineno)
     return dump_raw_info_all(content)
 end
 
+function get_unuseful_files(base, file_list)
+    local files_tbl = string.split(file_list, "\n")
+    local mark_tbl = {}
+    local unuseful = {}
+    for key, filename in pairs(files_tbl) do
+        mark_tbl[filename] = false
+    end
+
+    for md5, key_tbl in pairs(valuemd5_index_mapping_tbl) do
+        local filename = NOTE_PREFIX..md5
+        mark_tbl[filename] = true
+    end
+
+    for filename, useful in pairs(mark_tbl) do
+        if not useful then
+            table.insert(unuseful, filename)
+        end
+    end
+
+    return unuseful
+end
+
 if ( not arg[1] ) then
     print("missing binary top arg")
     return
@@ -469,5 +497,17 @@ elseif arg[2] == "getnote" then
     end
 
     local content, raw_tbl = getnote(base, md5)
-    dump_raw_info(content, raw_tbl, target_line)
+    if content and raw_tbl then
+        dump_raw_info(content, raw_tbl, target_line)
+    end
+elseif arg[2] == "gc" then
+    local base = arg[3]
+    local index_filename = arg[4]
+    local file_list = arg[5]
+
+    load_indexs(base, index_filename)
+    local unuseful = get_unuseful_files(base, file_list)
+    for _, filename in pairs(unuseful) do
+        print(string.format("%s", filename))
+    end
 end

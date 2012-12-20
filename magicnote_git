@@ -1,0 +1,175 @@
+#!/bin/sh
+
+# load configuration
+if [ -f ~/.magicnoterc ]; then
+    source ~/.magicnoterc
+elif [ -f /usr/local/etc/magicnoterc ]; then
+    source /usr/local/etc/magicnoterc
+fi
+
+BINTOP=$MAGICTOP/bin
+DATATOP=$MAGICTOP/var
+ETCTOP=$MAGICTOP/etc
+
+if [ -f $ETCTOP/magicnote_base ]; then
+    source ./magicnote_base
+fi
+
+function add_modify_files()
+{(
+    local top=$1
+    cd $top;
+    local update_file
+    git status -s | awk {'print $2'} | while read update_file
+    do
+        git add $update_file
+    done
+    git commit -m "add/update note"
+)}
+
+function action_addsource_git()
+{
+    if [ $# != 1 ]; then
+        echo "need source address, for example: addsource git@xxx.git"
+        exit
+    fi
+
+    gitsource=$1
+    git clone $gitsource $MAINNOTE_DIR
+    ( cd $MAINNOTE_DIR && touch $INDEX_FILENAME && git add . && git ci -m "create index" )
+}
+
+function action_add_git()
+{
+    action_add $@
+    add_modify_files $MAINNOTE_DIR
+}
+
+function action_edit_git()
+{
+    action_edit $@
+    add_modify_files $MAINNOTE_DIR
+}
+
+function action_rm_git()
+{
+    action_rm $@
+    add_modify_files $MAINNOTE_DIR
+}
+
+function action_status()
+{
+    cd $DATATOP/$NOTEDIR;
+    local all_folders=`ls ./`;
+    echo "$all_folders" | while read folder
+    do
+        (
+        cd $folder &&
+        local origin_url=`git config --get remote.origin.url`;
+        if [ $CURRENT = "$folder" ]; then
+            echo "* $folder : $origin_url"
+        else
+            echo "  $folder : $origin_url"
+        fi
+        )
+    done
+}
+
+function action_push()
+{(
+    cd $MAINNOTE_DIR;
+    git push
+)}
+
+function action_pull()
+{(
+    cd $MAINNOTE_DIR;
+    git pull
+)}
+
+function action_gc_git()
+{
+    cd $MAINNOTE_DIR
+    dump_unuseful_list | while read unuseful_file
+    do
+        git rm $unuseful_file
+        echo "delete $unuseful_file"
+    done
+    git ci -m "cleanup the unuseful files"
+    git gc
+}
+
+function print_usage()
+{
+    echo "usage:";
+    echo "  \_ magicnote addsource source";
+    echo "  \_ magicnote list [tag1 [ tag2 ...]]";
+    echo "  \_ magicnote add [-tag tagname]";
+    echo "  \_ magicnote rm tag@index [tag2@index2 ...]";
+    echo "  \_ magicnote edit tag@index [tag2@index2 ...]";
+    echo "  \_ magicnote find tag1 tag2 ...";
+    echo "  \_ magicnote run tag@index [tag2@index2 ...]";
+    echo "  \_ magicnote status";
+    echo "  \_ magicnote push";
+    echo "  \_ magicnote pull";
+    echo "  \_ magicnote gc";
+}
+
+######## main #########
+
+# print help
+if [ $# = 0 ]; then
+    print_usage
+    exit
+fi
+
+# commands
+if [ $1 = "addsource" ]; then
+    shift
+    action_addsource_git $@
+elif [ $1 = "list" ]; then
+    pre_check
+    shift
+    action_list $@
+elif [ $1 = "add" ]; then
+    pre_check
+    shift
+    cleanup
+    action_add_git $@
+    cleanup
+elif [ $1 = "edit" ]; then
+    pre_check
+    shift
+    action_edit_git $@
+elif [ $1 = "rm" ]; then
+    pre_check
+    shift
+    action_rm_git $@
+elif [ $1 = "find" ]; then
+    pre_check
+    shift
+    action_find $@
+elif [ $1 = "run" ]; then
+    pre_check
+    shift
+    action_run $@
+elif [ $1 = "status" ]; then
+    pre_check
+    shift
+    action_status
+elif [ $1 = "push" ]; then
+    pre_check
+    shift
+    action_push
+elif [ $1 = "pull" ]; then
+    pre_check
+    shift
+    action_pull
+elif [ $1 = "gc" ]; then
+    pre_check
+    shift
+    action_gc_git
+else
+    echo "unknown arg '$1'"
+    print_usage
+fi
