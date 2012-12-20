@@ -258,11 +258,8 @@ function find_note(base, find_tags)
 
         if is_all_match(find_tags) then
             result_tbl[tagname] = result_tbl[tagname] or {}
-            table.insert(result_tbl[tagname], {
-                index = index,
-                content = content,
-                raw_tbl = raw_tbl,
-            })
+            local note_tbl = create_note_tbl(index, md5, content, raw_tbl)
+            table.insert(result_tbl[tagname], note_tbl)
         end
     end
 
@@ -477,7 +474,7 @@ elseif arg[2] == "find" then
     else
         local find_tags = {}
         for i=5, 5+find_tags_size-1 do
-            find_tags[arg[i]] = false -- first, mark all tags false
+            find_tags[string.lower(arg[i])] = false -- first, mark all tags false
         end
 
         load_indexs(base, index_filename)
