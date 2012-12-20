@@ -12,7 +12,7 @@ DATATOP=$MAGICTOP/var
 ETCTOP=$MAGICTOP/etc
 
 if [ -f $ETCTOP/magicnote_base ]; then
-    source ./magicnote_base
+    source $ETCTOP/magicnote_base
 fi
 
 function add_modify_files()
