@@ -24,7 +24,7 @@ Command:
     bash-$ magicnote
     usage:
       \_ magicnote addsource
-      \_ magicnote list [tag1 [ tag2 ...]]
+      \_ magicnote ls [tag1 [ tag2 ...]]
       \_ magicnote add [-tag tagname]
       \_ magicnote rm tag@index [tag2@index2 ...]
       \_ magicnote edit tag@index [tag2@index2 ...]
@@ -35,7 +35,7 @@ Command:
     bash-$ magicnote_git
     usage:
       \_ magicnote addsource source
-      \_ magicnote list [tag1 [ tag2 ...]]
+      \_ magicnote ls [tag1 [ tag2 ...]]
       \_ magicnote add [-tag tagname]
       \_ magicnote rm tag@index [tag2@index2 ...]
       \_ magicnote edit tag@index [tag2@index2 ...]
@@ -54,7 +54,7 @@ Samples
 
 *list*
 
-      bash-$ magicnote list
+      bash-$ magicnote ls
       ssh
         |- @1 #1: ssh 127.0.0.1
         |- @2 #1: ssh -P 1234 127.0.0.1
