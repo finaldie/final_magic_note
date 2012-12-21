@@ -127,7 +127,7 @@ fi
 if [ $1 = "addsource" ]; then
     shift
     action_addsource_git $@
-elif [ $1 = "list" ]; then
+elif [ $1 = "ls" ]; then
     pre_check
     shift
     action_list $@
