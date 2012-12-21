@@ -87,6 +87,20 @@ function cleanup()
     rm -f $TMPFILE $TMPINDEX $FINALINDEX
 }
 
+function backup_index()
+{
+    if [ -f $MAINNOTE_DIR/$INDEX_FILENAME ]; then
+        cp $MAINNOTE_DIR/$INDEX_FILENAME $MAINNOTE_DIR/.$INDEX_FILENAME.bak
+    fi
+}
+
+function revert_index()
+{
+    if [ -f $MAINNOTE_DIR/.$INDEX_FILENAME.bak ]; then
+        cp $MAINNOTE_DIR/.$INDEX_FILENAME.bak $MAINNOTE_DIR/$INDEX_FILENAME
+    fi
+}
+
 function action_list()
 {
     # because list tags is a very complex job, we call a lua script to do this
@@ -117,6 +131,7 @@ function action_add()
 
     #1
     ## prepare a tmp environment
+    backup_index
     cp $MAINNOTE_DIR/$INDEX_FILENAME $TMPINDEX
     $EDITOR $TMPFILE
     if [ ! -f $TMPFILE ]; then
@@ -176,6 +191,7 @@ function action_rm()
         exit
     fi
 
+    backup_index
     while [ -n "$1" ]
     do
         action_rm_one $1
@@ -221,6 +237,7 @@ function action_edit()
         exit
     fi
 
+    backup_index
     while [ -n "$1" ]
     do
         action_edit_one $1

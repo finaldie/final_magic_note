@@ -99,6 +99,12 @@ function action_gc_git()
     git gc
 }
 
+function action_revert_git()
+{
+    cd $MAINNOTE_DIR
+    git reset --hard HEAD~1
+}
+
 function print_usage()
 {
     echo "usage:";
@@ -112,6 +118,7 @@ function print_usage()
     echo "  \_ magicnote status";
     echo "  \_ magicnote push";
     echo "  \_ magicnote pull";
+    echo "  \_ magicnote revert";
     echo "  \_ magicnote gc";
 }
 
@@ -169,6 +176,10 @@ elif [ $1 = "gc" ]; then
     pre_check
     shift
     action_gc_git
+elif [ $1 = "revert" ]; then
+    pre_check
+    shift
+    action_revert_git
 else
     echo "unknown arg '$1'"
     print_usage
