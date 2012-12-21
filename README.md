@@ -11,7 +11,13 @@ Description:
 
 DEPENDENCE
 
-    This tool require lua 5.1+
+    Require Lua 5.1+
+    Require Linux or MacOS Operation System
+
+NOTE:
+
+    Better to separate using magicnote and magicnote_git, or your data repository may
+    need extra efforts to repair
 
 Install:
 
@@ -30,21 +36,23 @@ Command:
       \_ magicnote edit tag@index [tag2@index2 ...]
       \_ magicnote find tag1 tag2 ...
       \_ magicnote run tag@index [tag2@index2 ...]
+      \_ magicnote revert
       \_ magicnote gc
 
     bash-$ magicnote_git
     usage:
-      \_ magicnote addsource source
-      \_ magicnote ls [tag1 [ tag2 ...]]
-      \_ magicnote add [-tag tagname]
-      \_ magicnote rm tag@index [tag2@index2 ...]
-      \_ magicnote edit tag@index [tag2@index2 ...]
-      \_ magicnote find tag1 tag2 ...
-      \_ magicnote run tag@index [tag2@index2 ...]
-      \_ magicnote status
-      \_ magicnote push
-      \_ magicnote pull
-      \_ magicnote gc
+      \_ magicnote_git addsource source
+      \_ magicnote_git ls [tag1 [ tag2 ...]]
+      \_ magicnote_git add [-tag tagname]
+      \_ magicnote_git rm tag@index [tag2@index2 ...]
+      \_ magicnote_git edit tag@index [tag2@index2 ...]
+      \_ magicnote_git find tag1 tag2 ...
+      \_ magicnote_git run tag@index [tag2@index2 ...]
+      \_ magicnote_git status
+      \_ magicnote_git push
+      \_ magicnote_git pull
+      \_ magicnote_git revert
+      \_ magicnote_git gc
 
 Samples
 
