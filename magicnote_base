@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 
 # main function:
 #   \_ Add repository ( normal folder or git repository )
@@ -57,11 +57,7 @@ function pre_check()
 
 function check_os()
 {
-    if [ $OSNAME = "Linux" ]; then
-        break
-    elif [ $OSNAME = "Darwin" ]; then
-        break
-    else
+    if [ $OSNAME != "Linux" ] && [ $OSNAME != "Darwin" ]; then
         echo "unsupport os"
         exit
     fi
