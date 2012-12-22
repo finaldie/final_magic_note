@@ -45,6 +45,14 @@ function add_note(tagname, md5)
     end
 end
 
+-- add multi tag mapping to one note
+function add_notes(tagnames, md5)
+    local tagname_tbl = string.split(tagnames, " ")
+    for _, tagname in ipairs(tagname_tbl) do
+        add_note(tagname, md5)
+    end
+end
+
 function rm_note(tagname, md5)
     local function update_mapping(array, value)
         local need_remove = 0
@@ -416,15 +424,11 @@ require("magicnote_util")
 if arg[2] == "add" then
     local base = arg[3]
     local index_filename = arg[4]
+    local md5 = arg[5]
+    local tagnames = arg[6]
+
     load_indexs(base, index_filename)
-
-    local note_filename = arg[6]
-    local prefix_md5 = string.split(note_filename, "_")
-    local prefix = prefix_md5[1]
-    local md5 = prefix_md5[2]
-    local tagname = arg[5]
-
-    add_note(tagname, md5)
+    add_notes(tagnames, md5)
     dump_indexs()
 
 elseif arg[2] == "list" then
@@ -448,10 +452,16 @@ elseif arg[2] == "searchkey" then
     local file_sign = arg[5]
 
     load_indexs(base, index_filename)
-    local tag, target_idx = split_file_sign(file_sign)
+    local tag, target_idx, target_line = split_file_sign(file_sign)
     local md5 = searchkey(tag, target_idx)
-    if md5 then
+    if not md5 then
+        return
+    end
+
+    if not target_line then
         print(string.format("%s %s", tag, md5))
+    else
+        print(string.format("%s %s %d", tag, md5, target_line))
     end
 elseif arg[2] == "rm" then
     local base = arg[3]

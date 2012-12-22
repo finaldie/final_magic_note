@@ -78,6 +78,16 @@ function cal_md5()
     fi
 }
 
+function check_tagname()
+{
+    local tagname=$1
+    local ret=`echo $tagname | grep -e "[\.\?\*|\\]" | wc -l`
+    if [ $ret = "1" ]; then
+        echo "invalid tagname, cannot contain '.' '*' '|' '\\' '?'"
+        exit 1
+    fi
+}
+
 function cleanup()
 {
     rm -f $TMPFILE $TMPINDEX $FINALINDEX
@@ -126,15 +136,68 @@ function action_list()
     done
 }
 
+function action_add_newnote()
+{
+    # 1. add note
+    # 2. add key
+    # 3. collect file status and commit into local
+    # 4. cleanup tmp files
+
+    # due to vim cannot run in nest shell script, this function still keep here
+    $EDITOR $TMPFILE
+    if [ ! -f $TMPFILE ]; then
+        exit
+    fi
+
+    local md5=`cal_md5 $TMPFILE`
+    local notefile=$FPREFIX$md5
+
+    if [ -z "$tagname" ]; then
+        read -p "input tag name:" tagname;
+        check_tagname $tagname
+    fi
+    #tagname=`echo $tagname | sed -e "s/ /_/g"`
+    #echo "tagname=$tagname"
+
+    lua $ACTION_BIN $BINTOP add $TMPDIR $TMP_INDEX_FILENAME $md5 "$tagname" > $FINALINDEX
+    mv $TMPFILE $MAINNOTE_DIR/$notefile
+}
+
+function action_add_exist()
+{
+    # the arg format possible "newnote" or "tagname@idx"
+    local file_sign=$1
+    local file_info=`lua $ACTION_BIN $BINTOP searchkey $TMPDIR $TMP_INDEX_FILENAME $file_sign`
+    local md5=`echo $file_info | awk {'print $2'}`
+
+    if [ -n "$md5" ]; then
+        # if found md5, that means its format is "tagname@idx"
+        echo "existnote $md5"
+    else
+        # if not found md5, there are two results:
+        # 1. its format is "newnote", so the user want to add a real file
+        # 2. do not have the item which named tagname@idx
+        if [ ! -f $file_sign ]; then
+            echo "error :No such file or note:$file_sign, please re-check the path or filename"
+            exit 1
+        fi
+
+        local md5v=`cal_md5 $file_sign`
+        local notefile=$FPREFIX$md5v
+        echo "file $md5v $file_sign $MAINNOTE_DIR/$notefile"
+    fi
+}
+
 function action_add()
 {
     # try to find the -tag arg
-    local tagname
+    local tagname=""
     while getopts t: ARGS
     do
         case $ARGS in
             t)
                 tagname="$OPTARG"
+                check_tagname $OPTARG
                 ;;
             *)
                 exit
@@ -143,38 +206,38 @@ function action_add()
     done
     shift $(($OPTIND-1))
 
-    # 1. add note
-    # 2. add key
-    # 3. collect file status and commit into local
-    # 4. cleanup tmp files
-
-    #1
-    ## prepare a tmp environment
+    # prepare to add
     backup_index
     cp $MAINNOTE_DIR/$INDEX_FILENAME $TMPINDEX
-    $EDITOR $TMPFILE
-    if [ ! -f $TMPFILE ]; then
-        exit
+
+    if [ $# = 0 ]; then
+        action_add_newnote $tagname
+    else
+        local res=`action_add_exist $@`
+        local ret=`echo $res | awk {'print $1'}`
+        if [ "$ret" = "error" ]; then
+            echo "$res"
+            exit 1
+        fi
+
+        if [ -z "$tagname" ]; then
+            read -p "input tag name:" tagname;
+            check_tagname $tagname
+        fi
+
+        local ret=`echo $res | awk {'print $1'}`
+        local md5=`echo $res | awk {'print $2'}`
+        local src=`echo $res | awk {'print $3'}`
+        local desc=`echo $res | awk {'print $4'}`
+        echo "res=$res, tagname=$tagname, md5=$md5, src=$src, desc=$desc"
+        lua $ACTION_BIN $BINTOP add $TMPDIR $TMP_INDEX_FILENAME $md5 "$tagname" > $FINALINDEX
+        if [ -n "$src" ] && [ -n "$desc" ]; then
+            cp $src $desc;
+        fi
     fi
 
-    local md5v=`cal_md5 $TMPFILE`
-    echo "$md5v"
-    local notefile=$FPREFIX$md5v
-
-    #2
-    # because add/update key is a very complex job, we call a lua script to do
-    # this job
-    if [ -z "$tagname" ]; then
-        read -p "input tag name:" tagname;
-    fi
-
-    tagname=`echo $tagname | sed -e "s/ /_/g"`
-    #echo "tagname=$tagname"
-    lua $ACTION_BIN $BINTOP add $TMPDIR $TMP_INDEX_FILENAME "$tagname" $notefile > $FINALINDEX
-
-    ## if everything is ok, move note file and index to origin place
-    mv $TMPFILE $MAINNOTE_DIR/$notefile;
     mv $FINALINDEX $MAINNOTE_DIR/$INDEX_FILENAME
+    cleanup
 }
 
 function action_rm_one()
@@ -307,9 +370,7 @@ function action_run()
     fi
 
     lua $ACTION_BIN $BINTOP getnote $MAINNOTE_DIR $INDEX_FILENAME $1 > $TMPDIR/tmp_note.sh
-    echo "ready to run:"
-    cat $TMPDIR/tmp_note.sh
-    sh $TMPDIR/tmp_note.sh
+    sh -v $TMPDIR/tmp_note.sh
 }
 
 function dump_unuseful_list()

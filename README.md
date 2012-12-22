@@ -32,6 +32,7 @@ Command:
       \_ magicnote addsource
       \_ magicnote ls [-p] [tag1 [ tag2 ...]]
       \_ magicnote add [-t tagname]
+      \_ magicnote add [-t tagname1 [tagname2 ...]] [file | tag@index]
       \_ magicnote rm tag@index [tag2@index2 ...]
       \_ magicnote edit tag@index [tag2@index2 ...]
       \_ magicnote find [-p] tag1 tag2 ...
@@ -44,7 +45,7 @@ Command:
     usage:
       \_ magicnote_git addsource source
       \_ magicnote_git ls [-p] [tag1 [ tag2 ...]]
-      \_ magicnote_git add [-t tagname]
+      \_ magicnote_git add [-t tagname1 [tagname2 ...]] [file | tag@index]
       \_ magicnote_git rm tag@index [tag2@index2 ...]
       \_ magicnote_git edit tag@index [tag2@index2 ...]
       \_ magicnote_git find [-p] tag1 tag2 ...
