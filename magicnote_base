@@ -116,9 +116,15 @@ function action_add()
 {
     # try to find the -tag arg
     local tagname
-    if [ $# != 0 ] && [ $1 = "-tag" ]; then
-        tagname="$2"
-    fi
+    while getopts t: ARGS
+    do
+        case $ARGS in
+            t)
+                tagname="$OPTARG"
+                ;;
+        esac
+    done
+    shift $(($OPTIND-1))
 
     # 1. add note
     # 2. add key
