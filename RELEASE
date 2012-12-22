@@ -1,3 +1,11 @@
+0.1.6 2012-12-23
+    Issue #7: rename list to ls
+    Issue #6: before add/edit/rm, create a index.bak first, and can revert to last version by a new command -> revert
+    Issue #3: add -p option for ls and find command, which can show all content of the line without limitation
+    Issue #8: add show command for showing all tags info
+    Issue #2: add multi tags support
+    fix compatible issue, using bash instead of sh
+    using getopts instead of manually get args
 0.1.5 2012-12-20
     fix text-transform issue for find command
 0.1.4 2012-12-20
