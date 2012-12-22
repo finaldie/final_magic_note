@@ -16,8 +16,10 @@ DEPENDENCE
 
 NOTE:
 
-    Better to separate using magicnote and magicnote_git, or your data repository may
+    1. Better to separate using magicnote and magicnote_git, or your data repository may
     need extra efforts to repair
+    2. If you want to use command auto complete, just include magicnote_complete.bash or
+    magicnote_complete_git.bash in your bashrc
 
 Install:
 
