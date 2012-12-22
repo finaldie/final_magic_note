@@ -109,7 +109,7 @@ function print_usage()
 {
     echo "usage:";
     echo "  \_ magicnote_git addsource source";
-    echo "  \_ magicnote_git list [-p] [tag1 [ tag2 ...]]";
+    echo "  \_ magicnote_git ls [-p] [tag1 [ tag2 ...]]";
     echo "  \_ magicnote_git add [-t tagname1 [tagname2 ...]] [file | tag@index]";
     echo "  \_ magicnote_git rm tag@index [tag2@index2 ...]";
     echo "  \_ magicnote_git edit tag@index [tag2@index2 ...]";

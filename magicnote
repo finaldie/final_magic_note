@@ -19,7 +19,7 @@ function print_usage()
 {
     echo "usage:";
     echo "  \_ magicnote addsource source";
-    echo "  \_ magicnote list [-p] [tag1 [ tag2 ...]]";
+    echo "  \_ magicnote ls [-p] [tag1 [ tag2 ...]]";
     echo "  \_ magicnote add [-t tagname1 [tagname2 ...]] [file | tag@index]";
     echo "  \_ magicnote rm tag@index [tag2@index2 ...]";
     echo "  \_ magicnote edit tag@index [tag2@index2 ...]";
