@@ -30,11 +30,11 @@ Command:
     bash-$ magicnote
     usage:
       \_ magicnote addsource
-      \_ magicnote ls [tag1 [ tag2 ...]]
+      \_ magicnote ls [-p] [tag1 [ tag2 ...]]
       \_ magicnote add [-t tagname]
       \_ magicnote rm tag@index [tag2@index2 ...]
       \_ magicnote edit tag@index [tag2@index2 ...]
-      \_ magicnote find tag1 tag2 ...
+      \_ magicnote find [-p] tag1 tag2 ...
       \_ magicnote run tag@index [tag2@index2 ...]
       \_ magicnote revert
       \_ magicnote gc
@@ -42,11 +42,11 @@ Command:
     bash-$ magicnote_git
     usage:
       \_ magicnote_git addsource source
-      \_ magicnote_git ls [tag1 [ tag2 ...]]
+      \_ magicnote_git ls [-p] [tag1 [ tag2 ...]]
       \_ magicnote_git add [-t tagname]
       \_ magicnote_git rm tag@index [tag2@index2 ...]
       \_ magicnote_git edit tag@index [tag2@index2 ...]
-      \_ magicnote_git find tag1 tag2 ...
+      \_ magicnote_git find [-p] tag1 tag2 ...
       \_ magicnote_git run tag@index [tag2@index2 ...]
       \_ magicnote_git status
       \_ magicnote_git push

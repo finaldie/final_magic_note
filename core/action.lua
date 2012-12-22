@@ -2,7 +2,7 @@
 index_valuemd5_mapping_tbl = {}
 valuemd5_index_mapping_tbl = {}
 DEBUG = false
-DEFAULT_DISPLAY_BYTES = 120
+DISPLAY_BYTES = 120
 NOTE_PREFIX = "note_"
 INDEX_FILENAME = "index"
 
@@ -309,8 +309,8 @@ function dump_note_tbl(note_tbl)
             if is_valid_line(line) then
                 real_lineno = real_lineno + 1
                 local display = string.format("  |- %s #%d: %s", index_sign, real_lineno, line)
-                if string.len(display) > DEFAULT_DISPLAY_BYTES then
-                    display = string.sub(display, 1, DEFAULT_DISPLAY_BYTES) .. "..."
+                if DISPLAY_BYTES > 0 and string.len(display) > DISPLAY_BYTES then
+                    display = string.sub(display, 1, DISPLAY_BYTES) .. "..."
                 end
                 print(display)
             else
@@ -418,7 +418,8 @@ if arg[2] == "add" then
 elseif arg[2] == "list" then
     local base = arg[3]
     local index_filename = arg[4]
-    local tagname = arg[5]
+    DISPLAY_BYTES = tonumber(arg[5])
+    local tagname = arg[6]
 
     load_indexs(base, index_filename)
 
@@ -467,13 +468,14 @@ elseif arg[2] == "updatemd5" then
 elseif arg[2] == "find" then
     local base = arg[3]
     local index_filename = arg[4]
+    DISPLAY_BYTES = tonumber(arg[5])
 
-    local find_tags_size = table.size(arg) - 4 - 2
+    local find_tags_size = table.size(arg) - 5 - 2
     if find_tags_size == 0 then
         return
     else
         local find_tags = {}
-        for i=5, 5+find_tags_size-1 do
+        for i=6, 6+find_tags_size-1 do
             find_tags[string.lower(arg[i])] = false -- first, mark all tags false
         end
 

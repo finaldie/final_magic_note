@@ -2,3 +2,4 @@
 MAGICTOP=~/magicnote
 CURRENT=main
 EDITOR=vim
+LINE_LIMIT=120

@@ -100,14 +100,28 @@ function revert_index()
 function action_list()
 {
     # because list tags is a very complex job, we call a lua script to do this
+    local line_limit=$LINE_LIMIT
+    while getopts p ARGS
+    do
+        case $ARGS in
+            p)
+                line_limit=-1
+                ;;
+            *)
+                exit
+                ;;
+        esac
+    done
+    shift $(($OPTIND-1))
+
     if [ $# = 0 ]; then
-        lua $ACTION_BIN $BINTOP list $MAINNOTE_DIR $INDEX_FILENAME
+        lua $ACTION_BIN $BINTOP list $MAINNOTE_DIR $INDEX_FILENAME $line_limit
         exit
     fi
 
     while [ -n "$1" ]
     do
-        lua $ACTION_BIN $BINTOP list $MAINNOTE_DIR $INDEX_FILENAME $1
+        lua $ACTION_BIN $BINTOP list $MAINNOTE_DIR $INDEX_FILENAME $line_limit $1
         shift
     done
 }
@@ -121,6 +135,9 @@ function action_add()
         case $ARGS in
             t)
                 tagname="$OPTARG"
+                ;;
+            *)
+                exit
                 ;;
         esac
     done
@@ -249,12 +266,27 @@ function action_edit()
 
 function action_find()
 {
+    local line_limit=$LINE_LIMIT
+    while getopts p ARGS
+    do
+        case $ARGS in
+            p)
+                line_limit=-1
+                ;;
+            *)
+                exit
+                ;;
+        esac
+    done
+    echo "shift $(($OPTIND-1))"
+    shift $(($OPTIND-1))
+
     if [ $# = 0 ]; then
         echo "please input a key for this finding, e.g. find test"
         exit
     fi
 
-    lua $ACTION_BIN $BINTOP find $MAINNOTE_DIR $INDEX_FILENAME $@
+    lua $ACTION_BIN $BINTOP find $MAINNOTE_DIR $INDEX_FILENAME $line_limit $@
 }
 
 function action_run()
