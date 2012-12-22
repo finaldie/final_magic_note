@@ -17,6 +17,8 @@ mkdir -p $DATA
 # install configuration
 mkdir -p $ETC
 cp ./magicnote_base $ETC
+cp ./magicnote_complete.bash ~/.magicnote_complete.bash
+cp ./magicnote_complete_git.bash ~/.magicnote_complete_git.bash
 
 # prepare a default magicnoterc
 echo "Installed at $prefix --> completed, have a fun"
