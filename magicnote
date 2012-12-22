@@ -26,6 +26,7 @@ function print_usage()
     echo "  \_ magicnote find [-p] tag1 tag2 ...";
     echo "  \_ magicnote run tag@index [tag2@index2 ...]";
     echo "  \_ magicnote revert";
+    echo "  \_ magicnote show [-v]";
     echo "  \_ magicnote gc";
 }
 
@@ -85,6 +86,10 @@ elif [ $1 = "revert" ]; then
     pre_check
     shift
     revert_index
+elif [ $1 = "show" ]; then
+    pre_check
+    shift
+    action_showtags $@
 else
     echo "unknown arg '$1'"
     print_usage

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # load configuration
 if [ -f ~/.magicnoterc ]; then
@@ -108,18 +108,19 @@ function action_revert_git()
 function print_usage()
 {
     echo "usage:";
-    echo "  \_ magicnote addsource source";
-    echo "  \_ magicnote list [-p] [tag1 [ tag2 ...]]";
-    echo "  \_ magicnote add [-t tagname]";
-    echo "  \_ magicnote rm tag@index [tag2@index2 ...]";
-    echo "  \_ magicnote edit tag@index [tag2@index2 ...]";
-    echo "  \_ magicnote find [-p] tag1 tag2 ...";
-    echo "  \_ magicnote run tag@index [tag2@index2 ...]";
-    echo "  \_ magicnote status";
-    echo "  \_ magicnote push";
-    echo "  \_ magicnote pull";
-    echo "  \_ magicnote revert";
-    echo "  \_ magicnote gc";
+    echo "  \_ magicnote_git addsource source";
+    echo "  \_ magicnote_git list [-p] [tag1 [ tag2 ...]]";
+    echo "  \_ magicnote_git add [-t tagname]";
+    echo "  \_ magicnote_git rm tag@index [tag2@index2 ...]";
+    echo "  \_ magicnote_git edit tag@index [tag2@index2 ...]";
+    echo "  \_ magicnote_git find [-p] tag1 tag2 ...";
+    echo "  \_ magicnote_git run tag@index [tag2@index2 ...]";
+    echo "  \_ magicnote_git status";
+    echo "  \_ magicnote_git push";
+    echo "  \_ magicnote_git pull";
+    echo "  \_ magicnote_git revert";
+    echo "  \_ magicnote_git show [-v]";
+    echo "  \_ magicnote_git gc";
 }
 
 ######## main #########
@@ -180,6 +181,10 @@ elif [ $1 = "revert" ]; then
     pre_check
     shift
     action_revert_git
+elif [ $1 = "show" ]; then
+    pre_check
+    shift
+    action_showtags $@
 else
     echo "unknown arg '$1'"
     print_usage

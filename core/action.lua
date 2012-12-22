@@ -384,6 +384,18 @@ function get_unuseful_files(base, file_list)
     return unuseful
 end
 
+function dump_tags_info(result_tbl, show_detail)
+    for tagname, notes_tbl in pairs(result_tbl) do
+        if not table.empty(notes_tbl) then
+            if show_detail then
+                print(string.format("%s %d", tagname, table.size(notes_tbl)))
+            else
+                print(string.format("%s", tagname))
+            end
+        end
+    end
+end
+
 if ( not arg[1] ) then
     print("missing binary top arg")
     return
@@ -509,4 +521,12 @@ elseif arg[2] == "gc" then
     for _, filename in pairs(unuseful) do
         print(string.format("%s", filename))
     end
+elseif arg[2] == "showtags" then
+    local base = arg[3]
+    local index_filename = arg[4]
+    local show_detail = arg[5]
+
+    load_indexs(base, index_filename)
+    local result_tbl = list_all_notes(base)
+    dump_tags_info(result_tbl, show_detail)
 end

@@ -37,6 +37,7 @@ Command:
       \_ magicnote find [-p] tag1 tag2 ...
       \_ magicnote run tag@index [tag2@index2 ...]
       \_ magicnote revert
+      \_ magicnote show [-v]
       \_ magicnote gc
 
     bash-$ magicnote_git
@@ -52,6 +53,7 @@ Command:
       \_ magicnote_git push
       \_ magicnote_git pull
       \_ magicnote_git revert
+      \_ magicnote_git show [-v]
       \_ magicnote_git gc
 
 Samples
