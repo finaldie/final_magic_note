@@ -37,7 +37,7 @@ function magicnote_complete_git()
             COMPREPLY=( $(compgen -W "${show_list}" -- ${cur}) )
             return 0
             ;;
-        magicnote)
+        magicnote_git)
             COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
             return 0
             ;;
