@@ -22,6 +22,8 @@
 
 # global vars
 OSNAME=`uname`
+VERSION=
+RELEASE_TIME=
 
 NOTEDIR=magicnote
 MAINNOTE_DIR=$DATATOP/$NOTEDIR/$CURRENT
@@ -409,6 +411,11 @@ function action_showtags()
     done
     shift $(($OPTIND-1))
     lua $ACTION_BIN $BINTOP showtags $MAINNOTE_DIR $INDEX_FILENAME $show_detail
+}
+
+function action_version()
+{
+    echo "$VERSION $RELEASE_TIME Author:finaldie"
 }
 
 ######## main #########

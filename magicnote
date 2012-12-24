@@ -44,6 +44,7 @@ function action_gc()
 
 # print help
 if [ $# = 0 ]; then
+    action_version
     print_usage
     exit
 fi
