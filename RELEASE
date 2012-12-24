@@ -1,3 +1,6 @@
+0.1.7 2012-12-24
+    Issue #10: Support command auto complete
+    Issue #11: Support print version and related information
 0.1.6 2012-12-23
     Issue #7: rename list to ls
     Issue #6: before add/edit/rm, create a index.bak first, and can revert to last version by a new command -> revert
