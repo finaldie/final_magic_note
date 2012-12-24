@@ -245,7 +245,7 @@ function action_add()
 function action_rm_one()
 {
     if [ $# = 0 ]; then
-        echo "please input a file stamp, e.g. mn edit ssh@1"
+        echo "please input a file stamp, e.g. rm ssh@1"
         exit
     fi
 
@@ -271,7 +271,7 @@ function action_rm_one()
 function action_rm()
 {
     if [ $# = 0 ]; then
-        echo "please input a file stamp, e.g. mn edit ssh@1"
+        echo "please input a file stamp, e.g. rm ssh@1"
         exit
     fi
 
@@ -317,7 +317,7 @@ function action_edit_one()
 function action_edit()
 {
     if [ $# = 0 ]; then
-        echo "please input a file stamp, e.g. mn edit ssh@1"
+        echo "please input a file stamp, e.g. edit ssh@1"
         exit
     fi
 
