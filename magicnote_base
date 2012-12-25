@@ -23,7 +23,6 @@
 # global vars
 OSNAME=`uname`
 VERSION=
-RELEASE_TIME=
 
 NOTEDIR=magicnote
 MAINNOTE_DIR=$DATATOP/$NOTEDIR/$CURRENT
@@ -415,7 +414,7 @@ function action_showtags()
 
 function action_version()
 {
-    echo "$VERSION $RELEASE_TIME Author:finaldie"
+    echo "version $VERSION"
 }
 
 ######## main #########

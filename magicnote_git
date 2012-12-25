@@ -102,7 +102,14 @@ function action_gc_git()
 function action_revert_git()
 {
     cd $MAINNOTE_DIR
-    git reset --hard HEAD~1
+    local can_revert=`git st | grep -P "# Your branch is ahead of" | wc -l | awk {'print $1'}`
+
+    if [ $can_revert != "0" ]; then
+        git reset --hard HEAD~1
+        echo "revert complete"
+    else
+        echo "nothing to be done"
+    fi
 }
 
 function print_usage()

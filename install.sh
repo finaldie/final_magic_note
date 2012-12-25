@@ -16,10 +16,8 @@ mkdir -p $DATA
 
 # install configuration
 mkdir -p $ETC
-version=`cat RELEASE | grep -P "^\d\.\d\.\d" | head -1 | awk {'print $1'}`
-release_time=`cat RELEASE | grep -P "^\d\.\d\.\d" | head -1 | awk {'print $2'}`
-sed -e "s/VERSION=.*/VERSION=$version/" magicnote_base > /tmp/magicnote_base
-sed -i "s/RELEASE_TIME=.*/RELEASE_TIME=$release_time/" /tmp/magicnote_base
+version=`cat RELEASE | grep -P "^\d\.\d\.\d" | head -1`
+sed -e "s/VERSION=.*/VERSION=\"$version\"/" magicnote_base > /tmp/magicnote_base
 cp /tmp/magicnote_base $ETC
 cp ./magicnote_complete.bash ~/.magicnote_complete.bash
 cp ./magicnote_complete_git.bash ~/.magicnote_complete_git.bash
