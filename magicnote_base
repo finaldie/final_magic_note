@@ -342,7 +342,6 @@ function action_find()
                 ;;
         esac
     done
-    echo "shift $(($OPTIND-1))"
     shift $(($OPTIND-1))
 
     if [ $# = 0 ]; then
