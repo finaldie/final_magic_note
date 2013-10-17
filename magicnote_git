@@ -36,7 +36,7 @@ function action_addsource_git()
 
     gitsource=$1
     git clone $gitsource $MAINNOTE_DIR
-    ( cd $MAINNOTE_DIR && touch $INDEX_FILENAME && git add . && git ci -m "create index" )
+    ( cd $MAINNOTE_DIR && touch $INDEX_FILENAME && git add . && git commit -m "create index" )
 }
 
 function action_add_git()
@@ -95,14 +95,14 @@ function action_gc_git()
         git rm $unuseful_file
         echo "delete $unuseful_file"
     done
-    git ci -m "cleanup the unuseful files"
+    git commit -m "cleanup the unuseful files"
     git gc
 }
 
 function action_revert_git()
 {
     cd $MAINNOTE_DIR
-    local can_revert=`git st | grep -P "# Your branch is ahead of" | wc -l | awk {'print $1'}`
+    local can_revert=`git status | grep -P "# Your branch is ahead of" | wc -l | awk {'print $1'}`
 
     if [ $can_revert != "0" ]; then
         git reset --hard HEAD~1
